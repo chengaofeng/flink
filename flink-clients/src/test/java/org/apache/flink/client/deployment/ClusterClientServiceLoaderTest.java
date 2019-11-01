@@ -19,7 +19,7 @@
 package org.apache.flink.client.deployment;
 
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.configuration.DeploymentOptions;
+import org.apache.flink.configuration.ExecutionOptions;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -57,7 +57,7 @@ public class ClusterClientServiceLoaderTest {
 	@Test
 	public void testStandaloneClusterClientFactoryDiscovery() {
 		final Configuration config = new Configuration();
-		config.setString(DeploymentOptions.TARGET, StandaloneClientFactory.ID);
+		config.setString(ExecutionOptions.TARGET, StandaloneClientFactory.ID);
 
 		ClusterClientFactory<StandaloneClusterId> factory = serviceLoaderUnderTest.getClusterClientFactory(config);
 		assertTrue(factory instanceof StandaloneClientFactory);
@@ -66,7 +66,7 @@ public class ClusterClientServiceLoaderTest {
 	@Test
 	public void testFactoryDiscovery() {
 		final Configuration config = new Configuration();
-		config.setString(DeploymentOptions.TARGET, VALID_TARGET);
+		config.setString(ExecutionOptions.TARGET, VALID_TARGET);
 
 		final ClusterClientFactory<Integer> factory = serviceLoaderUnderTest.getClusterClientFactory(config);
 		assertNotNull(factory);
@@ -78,7 +78,7 @@ public class ClusterClientServiceLoaderTest {
 	@Test(expected = IllegalStateException.class)
 	public void testMoreThanOneCompatibleFactoriesException() {
 		final Configuration config = new Configuration();
-		config.setString(DeploymentOptions.TARGET, AMBIGUOUS_TARGET);
+		config.setString(ExecutionOptions.TARGET, AMBIGUOUS_TARGET);
 
 		serviceLoaderUnderTest.getClusterClientFactory(config);
 		fail();
@@ -87,7 +87,7 @@ public class ClusterClientServiceLoaderTest {
 	@Test
 	public void testNoFactoriesFound() {
 		final Configuration config = new Configuration();
-		config.setString(DeploymentOptions.TARGET, NON_EXISTING_TARGET);
+		config.setString(ExecutionOptions.TARGET, NON_EXISTING_TARGET);
 
 		final ClusterClientFactory<Integer> factory = serviceLoaderUnderTest.getClusterClientFactory(config);
 		assertNull(factory);
@@ -102,7 +102,7 @@ public class ClusterClientServiceLoaderTest {
 
 		@Override
 		public boolean isCompatibleWith(Configuration configuration) {
-			return configuration.getString(DeploymentOptions.TARGET).equals(VALID_TARGET);
+			return configuration.getString(ExecutionOptions.TARGET).equals(VALID_TARGET);
 		}
 
 		@Nullable
@@ -121,7 +121,7 @@ public class ClusterClientServiceLoaderTest {
 
 		@Override
 		public boolean isCompatibleWith(Configuration configuration) {
-			return configuration.getString(DeploymentOptions.TARGET).equals(AMBIGUOUS_TARGET);
+			return configuration.getString(ExecutionOptions.TARGET).equals(AMBIGUOUS_TARGET);
 		}
 	}
 
@@ -134,7 +134,7 @@ public class ClusterClientServiceLoaderTest {
 
 		@Override
 		public boolean isCompatibleWith(Configuration configuration) {
-			return configuration.getString(DeploymentOptions.TARGET).equals(AMBIGUOUS_TARGET);
+			return configuration.getString(ExecutionOptions.TARGET).equals(AMBIGUOUS_TARGET);
 		}
 	}
 

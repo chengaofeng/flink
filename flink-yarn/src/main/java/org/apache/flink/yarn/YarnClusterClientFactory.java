@@ -22,7 +22,7 @@ import org.apache.flink.client.deployment.ClusterClientFactory;
 import org.apache.flink.client.deployment.ClusterSpecification;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ConfigurationUtils;
-import org.apache.flink.configuration.DeploymentOptions;
+import org.apache.flink.configuration.ExecutionOptions;
 import org.apache.flink.configuration.TaskManagerOptions;
 import org.apache.flink.yarn.configuration.YarnConfigOptions;
 
@@ -45,7 +45,7 @@ public class YarnClusterClientFactory implements ClusterClientFactory<Applicatio
 	@Override
 	public boolean isCompatibleWith(Configuration configuration) {
 		checkNotNull(configuration);
-		return ID.equals(configuration.getString(DeploymentOptions.TARGET));
+		return ID.equals(configuration.getString(ExecutionOptions.TARGET));
 	}
 
 	@Override

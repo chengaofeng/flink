@@ -20,7 +20,7 @@ package org.apache.flink.client.cli.util;
 
 import org.apache.flink.client.cli.CustomCommandLine;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.configuration.DeploymentOptions;
+import org.apache.flink.configuration.ExecutionOptions;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
@@ -53,7 +53,7 @@ public class DummyCustomCommandLine implements CustomCommandLine {
 	@Override
 	public Configuration applyCommandLineOptionsToConfiguration(CommandLine commandLine) {
 		final Configuration configuration = new Configuration();
-		configuration.setString(DeploymentOptions.TARGET, DummyClusterClientFactory.ID);
+		configuration.setString(ExecutionOptions.TARGET, DummyClusterClientFactory.ID);
 		return configuration;
 	}
 }

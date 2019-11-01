@@ -19,7 +19,7 @@
 package org.apache.flink.client.deployment;
 
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.configuration.DeploymentOptions;
+import org.apache.flink.configuration.ExecutionOptions;
 
 import javax.annotation.Nullable;
 
@@ -35,7 +35,7 @@ public class StandaloneClientFactory implements ClusterClientFactory<StandaloneC
 	@Override
 	public boolean isCompatibleWith(Configuration configuration) {
 		checkNotNull(configuration);
-		return ID.equals(configuration.getString(DeploymentOptions.TARGET));
+		return ID.equals(configuration.getString(ExecutionOptions.TARGET));
 	}
 
 	@Override

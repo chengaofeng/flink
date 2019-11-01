@@ -26,7 +26,7 @@ import static org.apache.flink.configuration.ConfigOptions.key;
  * The {@link ConfigOption configuration options} relevant for all Executors.
  */
 @PublicEvolving
-public class DeploymentOptions {
+public class ExecutionOptions {
 
 	public static final ConfigOption<String> TARGET =
 			key("execution.target")

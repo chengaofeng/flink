@@ -29,7 +29,7 @@ import org.apache.flink.client.deployment.DefaultClusterClientServiceLoader;
 import org.apache.flink.client.program.ClusterClient;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.CoreOptions;
-import org.apache.flink.configuration.DeploymentOptions;
+import org.apache.flink.configuration.ExecutionOptions;
 import org.apache.flink.configuration.GlobalConfiguration;
 import org.apache.flink.configuration.JobManagerOptions;
 import org.apache.flink.configuration.MemorySize;
@@ -345,7 +345,7 @@ public class FlinkYarnSessionCli extends AbstractCustomCommandLine {
 	public Configuration applyCommandLineOptionsToConfiguration(CommandLine commandLine) throws FlinkException {
 		// we ignore the addressOption because it can only contain "yarn-cluster"
 		final Configuration effectiveConfiguration = new Configuration(configuration);
-		effectiveConfiguration.setString(DeploymentOptions.TARGET, getId());
+		effectiveConfiguration.setString(ExecutionOptions.TARGET, getId());
 
 		applyDescriptorOptionToConfig(commandLine, effectiveConfiguration);
 
@@ -418,7 +418,7 @@ public class FlinkYarnSessionCli extends AbstractCustomCommandLine {
 		configuration.setString(YarnConfigOptionsInternal.DYNAMIC_PROPERTIES, dynamicPropertiesEncoded);
 
 		final boolean detached = commandLine.hasOption(YARN_DETACHED_OPTION.getOpt()) || commandLine.hasOption(DETACHED_OPTION.getOpt());
-		configuration.setBoolean(DeploymentOptions.ATTACHED, !detached);
+		configuration.setBoolean(ExecutionOptions.ATTACHED, !detached);
 
 		if (commandLine.hasOption(name.getOpt())) {
 			final String appName = commandLine.getOptionValue(name.getOpt());

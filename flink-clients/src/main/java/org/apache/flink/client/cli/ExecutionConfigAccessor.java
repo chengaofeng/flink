@@ -21,7 +21,7 @@ package org.apache.flink.client.cli;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.CoreOptions;
-import org.apache.flink.configuration.DeploymentOptions;
+import org.apache.flink.configuration.ExecutionOptions;
 import org.apache.flink.configuration.PipelineOptions;
 import org.apache.flink.runtime.jobgraph.SavepointRestoreSettings;
 
@@ -60,8 +60,8 @@ public class ExecutionConfigAccessor {
 
 		final Configuration configuration = new Configuration();
 		configuration.setInteger(CoreOptions.DEFAULT_PARALLELISM, options.getParallelism());
-		configuration.setBoolean(DeploymentOptions.ATTACHED, !options.getDetachedMode());
-		configuration.setBoolean(DeploymentOptions.SHUTDOWN_IF_ATTACHED, options.isShutdownOnAttachedExit());
+		configuration.setBoolean(ExecutionOptions.ATTACHED, !options.getDetachedMode());
+		configuration.setBoolean(ExecutionOptions.SHUTDOWN_IF_ATTACHED, options.isShutdownOnAttachedExit());
 
 		parseClasspathURLsToConfig(options.getClasspaths(), configuration);
 		parseJarURLToConfig(options.getJarFilePath(), configuration);
@@ -113,7 +113,7 @@ public class ExecutionConfigAccessor {
 	}
 
 	public boolean getDetachedMode() {
-		return !configuration.getBoolean(DeploymentOptions.ATTACHED);
+		return !configuration.getBoolean(ExecutionOptions.ATTACHED);
 	}
 
 	public SavepointRestoreSettings getSavepointRestoreSettings() {
@@ -121,6 +121,6 @@ public class ExecutionConfigAccessor {
 	}
 
 	public boolean isShutdownOnAttachedExit() {
-		return configuration.getBoolean(DeploymentOptions.SHUTDOWN_IF_ATTACHED);
+		return configuration.getBoolean(ExecutionOptions.SHUTDOWN_IF_ATTACHED);
 	}
 }

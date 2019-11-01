@@ -22,7 +22,7 @@ import org.apache.flink.client.deployment.ClusterClientFactory;
 import org.apache.flink.client.deployment.ClusterClientServiceLoader;
 import org.apache.flink.client.deployment.DefaultClusterClientServiceLoader;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.configuration.DeploymentOptions;
+import org.apache.flink.configuration.ExecutionOptions;
 
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.junit.Test;
@@ -37,7 +37,7 @@ public class YarnClusterClientFactoryTest {
 	@Test
 	public void testYarnClusterClientFactoryDiscovery() {
 		final Configuration configuration = new Configuration();
-		configuration.setString(DeploymentOptions.TARGET, YarnClusterClientFactory.ID);
+		configuration.setString(ExecutionOptions.TARGET, YarnClusterClientFactory.ID);
 
 		final ClusterClientServiceLoader serviceLoader = new DefaultClusterClientServiceLoader();
 		final ClusterClientFactory<ApplicationId> factory = serviceLoader.getClusterClientFactory(configuration);

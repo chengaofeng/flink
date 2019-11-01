@@ -23,7 +23,7 @@ import org.apache.flink.client.deployment.ClusterDescriptor;
 import org.apache.flink.client.deployment.ClusterSpecification;
 import org.apache.flink.client.program.ClusterClient;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.configuration.DeploymentOptions;
+import org.apache.flink.configuration.ExecutionOptions;
 
 import javax.annotation.Nullable;
 
@@ -45,7 +45,7 @@ public class DummyClusterClientFactory<ClusterID> implements ClusterClientFactor
 
 	@Override
 	public boolean isCompatibleWith(Configuration configuration) {
-		return ID.equals(configuration.getString(DeploymentOptions.TARGET));
+		return ID.equals(configuration.getString(ExecutionOptions.TARGET));
 	}
 
 	@Override
