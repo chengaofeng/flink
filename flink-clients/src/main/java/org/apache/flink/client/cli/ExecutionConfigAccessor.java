@@ -19,6 +19,7 @@
 package org.apache.flink.client.cli;
 
 import org.apache.flink.annotation.Internal;
+import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.CoreOptions;
 import org.apache.flink.configuration.ExecutionOptions;
@@ -59,7 +60,11 @@ public class ExecutionConfigAccessor {
 		checkNotNull(options);
 
 		final Configuration configuration = new Configuration();
-		configuration.setInteger(CoreOptions.DEFAULT_PARALLELISM, options.getParallelism());
+
+		if (options.getParallelism() != ExecutionConfig.PARALLELISM_DEFAULT) {
+			configuration.setInteger(CoreOptions.DEFAULT_PARALLELISM, options.getParallelism());
+		}
+
 		configuration.setBoolean(ExecutionOptions.ATTACHED, !options.getDetachedMode());
 		configuration.setBoolean(ExecutionOptions.SHUTDOWN_IF_ATTACHED, options.isShutdownOnAttachedExit());
 
