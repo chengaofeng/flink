@@ -50,7 +50,12 @@ import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.api.java.typeutils.ValueTypeInfo;
 import org.apache.flink.api.java.typeutils.runtime.kryo.Serializers;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.ExecutionOptions;
 import org.apache.flink.configuration.RestOptions;
+import org.apache.flink.core.execution.DefaultExecutorServiceLoader;
+import org.apache.flink.core.execution.Executor;
+import org.apache.flink.core.execution.ExecutorFactory;
+import org.apache.flink.core.execution.ExecutorServiceLoader;
 import org.apache.flink.core.fs.Path;
 import org.apache.flink.types.StringValue;
 import org.apache.flink.util.NumberSequenceIterator;
@@ -122,11 +127,24 @@ public abstract class ExecutionEnvironment {
 	/** Flag to indicate whether sinks have been cleared in previous executions. */
 	private boolean wasExecuted = false;
 
+	private final ExecutorServiceLoader executorServiceLoader;
+
+	private final Configuration executorConfiguration;
+
 	/**
 	 * Creates a new Execution Environment.
 	 */
 	protected ExecutionEnvironment() {
+		this(new Configuration());
+	}
 
+	protected ExecutionEnvironment(final Configuration executorConfiguration) {
+		this(new DefaultExecutorServiceLoader(), executorConfiguration);
+	}
+
+	protected ExecutionEnvironment(final ExecutorServiceLoader executorServiceLoader, final Configuration executorConfiguration) {
+		this.executorServiceLoader = checkNotNull(executorServiceLoader);
+		this.executorConfiguration = checkNotNull(executorConfiguration);
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -761,7 +779,19 @@ public abstract class ExecutionEnvironment {
 	 * @return The result of the job execution, containing elapsed time and accumulators.
 	 * @throws Exception Thrown, if the program executions fails.
 	 */
-	public abstract JobExecutionResult execute(String jobName) throws Exception;
+	public JobExecutionResult execute(String jobName) throws Exception {
+		if (executorConfiguration.get(ExecutionOptions.TARGET) == null) {
+			throw new RuntimeException("No execution.target specified in your configuration file.");
+		}
+
+		final Plan plan = createProgramPlan(jobName);
+		final ExecutorFactory executorFactory =
+				executorServiceLoader.getExecutorFactory(executorConfiguration);
+
+		final Executor executor = executorFactory.getExecutor(executorConfiguration);
+		lastJobExecutionResult = executor.execute(plan, executorConfiguration); // TODO: 23.10.19 here I may need to consolidate executionConfig
+		return lastJobExecutionResult;
+	}
 
 	/**
 	 * Creates the plan with which the system will execute the program, and returns it as
