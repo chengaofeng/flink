@@ -20,9 +20,10 @@ package org.apache.flink.client.cli;
 
 import org.apache.flink.client.deployment.ClusterClientServiceLoader;
 import org.apache.flink.client.deployment.DefaultClusterClientServiceLoader;
-import org.apache.flink.client.program.ClusterClient;
 import org.apache.flink.client.program.PackagedProgram;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.CoreOptions;
+import org.apache.flink.configuration.ExecutionOptions;
 import org.apache.flink.runtime.jobgraph.SavepointRestoreSettings;
 
 import org.apache.commons.cli.CommandLine;
@@ -198,9 +199,9 @@ public class CliFrontendRunTest extends CliFrontendTestBase {
 		}
 
 		@Override
-		protected void executeProgram(PackagedProgram program, ClusterClient client, int parallelism, boolean detached) {
-			assertEquals(isDetached, detached);
-			assertEquals(expectedParallelism, parallelism);
+		protected void execute(Configuration configuration, PackagedProgram program) {
+			assertEquals(isDetached, !configuration.getBoolean(ExecutionOptions.ATTACHED));
+			assertEquals(expectedParallelism, configuration.getInteger(CoreOptions.DEFAULT_PARALLELISM));
 		}
 	}
 }
