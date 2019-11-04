@@ -31,6 +31,7 @@ import org.apache.flink.util.SerializedValue;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -471,6 +472,16 @@ public class JobGraph implements Serializable {
 		if (!userJars.contains(jar)) {
 			userJars.add(jar);
 		}
+	}
+
+	public void addJars(List<URL> libraries) {
+		libraries.stream().map(jar -> {
+			try {
+				return new Path(jar.toURI());
+			} catch (URISyntaxException e) {
+				throw new RuntimeException("URL is invalid. This should not happen.", e);
+			}
+		}).forEach(this::addJar);
 	}
 
 	/**
