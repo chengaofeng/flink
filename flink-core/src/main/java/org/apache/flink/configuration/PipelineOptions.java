@@ -50,4 +50,15 @@ public class PipelineOptions {
 					.asList()
 					.noDefaultValue()
 					.withDescription("A semicolon-separated list of the classpaths to package with the job jars to be sent to the cluster. These have to be valid URLs.");
+
+	/**
+	 * Configuration options that are **NOT** supposed to be set by the user but by the system.
+	 */
+	public static class Internal {
+
+		public static final ConfigOption<Boolean> IS_PYTHON =
+			key("$internal.pipeline.python")
+					.booleanType().defaultValue(false)
+					.withDescription("Indicates if the pipeline is written in Python.");
+	}
 }
