@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
 
@@ -52,8 +53,8 @@ public class CliFrontendTestUtils {
 		return f.getAbsolutePath();
 	}
 
-	public static String getNonJarFilePath() {
-		return CliFrontendRunTest.class.getResource("/testconfig/flink-conf.yaml").getFile();
+	public static URL getNonJarFilePath() {
+		return CliFrontendRunTest.class.getResource("/testconfig/flink-conf.yaml");
 	}
 
 	public static String getConfigDir() {

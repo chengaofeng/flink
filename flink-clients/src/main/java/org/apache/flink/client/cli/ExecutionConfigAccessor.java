@@ -101,10 +101,10 @@ public class ExecutionConfigAccessor {
 		return configuration;
 	}
 
-	public String getJarFilePath() {
+	public URL getJarFilePath() {
 		final List<URL> jarURL = ExecutionConfigurationUtils.urlListFromConfig(configuration, PipelineOptions.JARS);
 		if (jarURL != null && !jarURL.isEmpty()) {
-			return jarURL.get(0).getPath();
+			return jarURL.get(0);
 		}
 		return null;
 	}

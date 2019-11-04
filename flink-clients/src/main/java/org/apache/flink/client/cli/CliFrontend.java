@@ -776,7 +776,7 @@ public class CliFrontend {
 			final ProgramOptions runOptions,
 			final ExecutionConfigAccessor executionParameters) throws FileNotFoundException, ProgramInvocationException {
 		String[] programArgs = runOptions.getProgramArgs();
-		String jarFilePath = executionParameters.getJarFilePath();
+		URL jarFilePath = executionParameters.getJarFilePath();
 		List<URL> classpaths = executionParameters.getClasspaths();
 
 		// Get assembler class
@@ -816,8 +816,8 @@ public class CliFrontend {
 	 * @return The JAR file
 	 * @throws FileNotFoundException The JAR file does not exist.
 	 */
-	private File getJarFile(String jarFilePath) throws FileNotFoundException {
-		File jarFile = new File(jarFilePath);
+	private File getJarFile(URL jarFilePath) throws FileNotFoundException {
+		File jarFile = new File(jarFilePath.getPath());
 		// Check if JAR file exists
 		if (!jarFile.exists()) {
 			throw new FileNotFoundException("JAR file does not exist: " + jarFile);
