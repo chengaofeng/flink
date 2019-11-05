@@ -18,31 +18,27 @@
 
 package org.apache.flink.client;
 
-import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.api.common.JobSubmissionResult;
 import org.apache.flink.api.common.accumulators.AccumulatorHelper;
-import org.apache.flink.client.cli.ExecutionConfigAccessor;
-import org.apache.flink.client.deployment.ClusterClientFactory;
 import org.apache.flink.client.deployment.ClusterClientServiceLoader;
-import org.apache.flink.client.deployment.ClusterDescriptor;
-import org.apache.flink.client.deployment.ClusterSpecification;
 import org.apache.flink.client.program.ClusterClient;
 import org.apache.flink.client.program.ContextEnvironment;
 import org.apache.flink.client.program.ContextEnvironmentFactory;
 import org.apache.flink.client.program.DetachedJobExecutionResult;
 import org.apache.flink.client.program.PackagedProgram;
-import org.apache.flink.client.program.PackagedProgramUtils;
 import org.apache.flink.client.program.ProgramInvocationException;
 import org.apache.flink.client.program.ProgramMissingJobException;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.ExecutionOptions;
+import org.apache.flink.core.execution.DefaultExecutorServiceLoader;
+import org.apache.flink.core.execution.ExecutorServiceLoader;
 import org.apache.flink.runtime.client.JobExecutionException;
 import org.apache.flink.runtime.execution.librarycache.FlinkUserCodeClassLoaders;
 import org.apache.flink.runtime.jobgraph.JobGraph;
 import org.apache.flink.runtime.jobmaster.JobResult;
 import org.apache.flink.util.ExceptionUtils;
 import org.apache.flink.util.FlinkException;
-import org.apache.flink.util.ShutdownHookUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -144,7 +140,7 @@ public enum ClientUtils {
 		}
 	}
 
-	public static <ClusterID> void runProgram(
+	public static void runProgram(
 			final ClusterClientServiceLoader clusterClientServiceLoader,
 			final Configuration configuration,
 			final PackagedProgram program) throws ProgramInvocationException, FlinkException {
@@ -153,100 +149,12 @@ public enum ClientUtils {
 		checkNotNull(configuration);
 		checkNotNull(program);
 
-		final ClusterClientFactory<ClusterID> clusterClientFactory = clusterClientServiceLoader.getClusterClientFactory(configuration);
-		checkNotNull(clusterClientFactory);
+		// TODO: 05.11.19 now the  ClusterClientServiceLoader is not used.
+		final ExecutorServiceLoader executorServiceLoader = new DefaultExecutorServiceLoader();
 
-		final ClusterDescriptor<ClusterID> clusterDescriptor = clusterClientFactory.createClusterDescriptor(configuration);
-
-		try {
-			final ClusterID clusterId = clusterClientFactory.getClusterId(configuration);
-			final ExecutionConfigAccessor executionParameters = ExecutionConfigAccessor.fromConfiguration(configuration);
-			final ClusterClient<ClusterID> client;
-
-			// directly deploy the job if the cluster is started in job mode and detached
-			if (clusterId == null && executionParameters.getDetachedMode()) {
-				int parallelism = executionParameters.getParallelism() == -1 ? 1 : executionParameters.getParallelism();
-
-				final JobGraph jobGraph = PackagedProgramUtils.createJobGraph(program, configuration, parallelism);
-
-				final ClusterSpecification clusterSpecification = clusterClientFactory.getClusterSpecification(configuration);
-				client = clusterDescriptor.deployJobCluster(
-						clusterSpecification,
-						jobGraph,
-						executionParameters.getDetachedMode());
-
-				logAndSysout("Job has been submitted with JobID " + jobGraph.getJobID());
-
-				try {
-					client.close();
-				} catch (Exception e) {
-					LOG.info("Could not properly shut down the client.", e);
-				}
-			} else {
-				final Thread shutdownHook;
-				if (clusterId != null) {
-					client = clusterDescriptor.retrieve(clusterId);
-					shutdownHook = null;
-				} else {
-					// also in job mode we have to deploy a session cluster because the job
-					// might consist of multiple parts (e.g. when using collect)
-					final ClusterSpecification clusterSpecification = clusterClientFactory.getClusterSpecification(configuration);
-					client = clusterDescriptor.deploySessionCluster(clusterSpecification);
-					// if not running in detached mode, add a shutdown hook to shut down cluster if client exits
-					// there's a race-condition here if cli is killed before shutdown hook is installed
-					if (!executionParameters.getDetachedMode() && executionParameters.isShutdownOnAttachedExit()) {
-						shutdownHook = ShutdownHookUtil.addShutdownHook(client::shutDownCluster, client.getClass().getSimpleName(), LOG);
-					} else {
-						shutdownHook = null;
-					}
-				}
-
-				try {
-					int userParallelism = executionParameters.getParallelism();
-					LOG.debug("User parallelism is set to {}", userParallelism);
-					if (ExecutionConfig.PARALLELISM_DEFAULT == userParallelism) {
-						userParallelism = 1;
-					}
-
-					// TODO: 01.11.19 here is where I should simply pass the configuration
-					executeProgram(program, client, userParallelism, executionParameters.getDetachedMode());
-				} finally {
-					if (clusterId == null && !executionParameters.getDetachedMode()) {
-						// terminate the cluster only if we have started it before and if it's not detached
-						try {
-							client.shutDownCluster();
-						} catch (final Exception e) {
-							LOG.info("Could not properly terminate the Flink cluster.", e);
-						}
-						if (shutdownHook != null) {
-							// we do not need the hook anymore as we have just tried to shutdown the cluster.
-							ShutdownHookUtil.removeShutdownHook(shutdownHook, client.getClass().getSimpleName(), LOG);
-						}
-					}
-					try {
-						client.close();
-					} catch (Exception e) {
-						LOG.info("Could not properly shut down the client.", e);
-					}
-				}
-			}
-		} finally {
-			try {
-				clusterDescriptor.close();
-			} catch (Exception e) {
-				LOG.info("Could not properly close the cluster descriptor.", e);
-			}
-		}
-	}
-
-	protected static void executeProgram(
-			PackagedProgram program,
-			ClusterClient<?> client,
-			int parallelism,
-			boolean detached) throws ProgramMissingJobException, ProgramInvocationException {
 		logAndSysout("Starting execution of program");
 
-		JobSubmissionResult result = ClientUtils.executeProgram(client, program, parallelism, detached);
+		JobSubmissionResult result = executeProgram(executorServiceLoader, configuration, program);
 
 		if (result.isJobExecutionResult()) {
 			logAndSysout("Program execution finished");
@@ -263,35 +171,22 @@ public enum ClientUtils {
 		}
 	}
 
-	private static void logAndSysout(String message) {
-		LOG.info(message);
-		System.out.println(message);
-	}
-
 	public static JobSubmissionResult executeProgram(
-			ClusterClient<?> client,
-			PackagedProgram program,
-			int parallelism,
-			boolean detached) throws ProgramMissingJobException, ProgramInvocationException {
+			final ExecutorServiceLoader executorServiceLoader,
+			final Configuration configuration,
+			final PackagedProgram program) throws ProgramMissingJobException, ProgramInvocationException {
+
 		final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
 			Thread.currentThread().setContextClassLoader(program.getUserCodeClassLoader());
-
-			LOG.info("Starting program (detached: {})", detached);
-
-			final List<URL> libraries = program.getAllLibraries();
+			LOG.info("Starting program (attached: {})", configuration.getBoolean(ExecutionOptions.ATTACHED));
 
 			final AtomicReference<JobExecutionResult> jobExecutionResult = new AtomicReference<>();
 
-			ContextEnvironmentFactory factory = new ContextEnvironmentFactory(
-				client,
-				libraries,
-				program.getClasspaths(),
-				program.getUserCodeClassLoader(),
-				parallelism,
-				detached,
-				program.getSavepointSettings(),
-				jobExecutionResult);
+			final ContextEnvironmentFactory factory = new ContextEnvironmentFactory(
+					executorServiceLoader,
+					configuration,
+					jobExecutionResult);
 			ContextEnvironment.setAsContext(factory);
 
 			try {
@@ -305,9 +200,13 @@ public enum ClientUtils {
 			} finally {
 				ContextEnvironment.unsetContext();
 			}
-		}
-		finally {
+		} finally {
 			Thread.currentThread().setContextClassLoader(contextClassLoader);
 		}
+	}
+
+	private static void logAndSysout(String message) {
+		LOG.info(message);
+		System.out.println(message);
 	}
 }
