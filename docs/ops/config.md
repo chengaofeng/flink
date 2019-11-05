@@ -66,7 +66,7 @@ These parameters configure the default HDFS used by Flink. Setups that do not sp
 
 ### Execution
 
-{% include generated/deployment_configuration.html %}
+{% include generated/execution_configuration.html %}
 {% include generated/savepoint_config_configuration.html %}
 
 ### JobManager

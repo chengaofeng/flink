@@ -34,6 +34,13 @@ public class ExecutionOptions {
 					.noDefaultValue()
 					.withDescription("The deployment target for the execution, e.g. \"local\" for local execution.");
 
+	public static final ConfigOption<ExecutionMode> CLUSTER_MODE =
+			key("execution.target.cluster-mode")
+					.enumType(ExecutionMode.class)
+					.noDefaultValue()
+					.withDescription("Indicates if a pipeline should be executed on an already existing cluster (=" + ExecutionMode.SESSION + ")" +
+							", or a new cluster should be spawned (=" + ExecutionMode.PER_JOB + ").");
+
 	public static final ConfigOption<Boolean> ATTACHED =
 			key("execution.attached")
 					.booleanType()

@@ -20,6 +20,9 @@ package org.apache.flink.client.cli;
 
 import org.apache.flink.client.deployment.StandaloneClientFactory;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.ExecutionMode;
+import org.apache.flink.configuration.ExecutionOptions;
+import org.apache.flink.util.FlinkException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
@@ -47,5 +50,12 @@ public class DefaultCLI extends AbstractCustomCommandLine {
 	@Override
 	public void addGeneralOptions(Options baseOptions) {
 		super.addGeneralOptions(baseOptions);
+	}
+
+	@Override
+	public Configuration applyCommandLineOptionsToConfiguration(CommandLine commandLine) throws FlinkException {
+		final Configuration configuration = super.applyCommandLineOptionsToConfiguration(commandLine);
+		configuration.set(ExecutionOptions.CLUSTER_MODE, ExecutionMode.SESSION);
+		return configuration;
 	}
 }
