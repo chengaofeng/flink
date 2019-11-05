@@ -695,6 +695,7 @@ public class CliFrontend {
 				new PackagedProgram(jarFile, classpaths, programArgs) :
 				new PackagedProgram(jarFile, classpaths, entryPointClass, programArgs);
 
+		// TODO: 04.11.19 this maybe can go
 		program.setSavepointRestoreSettings(executionParameters.getSavepointRestoreSettings());
 
 		return program;
