@@ -87,7 +87,6 @@ public class PerJobClusterExecutor<ClusterID> implements Executor {
 			final Configuration executionConfig) throws Exception {
 
 		final ExecutionConfigAccessor configAccessor = ExecutionConfigAccessor.fromConfiguration(executionConfig);
-
 		final List<URL> classpaths = configAccessor.getClasspaths();
 		final URL jarFileUrl = configAccessor.getJarFilePath();
 
@@ -119,13 +118,6 @@ public class PerJobClusterExecutor<ClusterID> implements Executor {
 
 		try {
 			final ExecutionConfigAccessor configAccessor = ExecutionConfigAccessor.fromConfiguration(executionConfig);
-			final ClusterSpecification clusterSpecification = clusterClientFactory.getClusterSpecification(executionConfig);
-
-			clusterClient = clusterDescriptor.deploySessionCluster(clusterSpecification);
-			shutdownHook = configAccessor.isShutdownOnAttachedExit()
-					? ShutdownHookUtil.addShutdownHook(clusterClient::shutDownCluster, clusterClient.getClass().getSimpleName(), LOG)
-					: null;
-
 			final List<URL> classpaths = configAccessor.getClasspaths();
 			final URL jarFileUrl = configAccessor.getJarFilePath();
 
@@ -136,9 +128,16 @@ public class PerJobClusterExecutor<ClusterID> implements Executor {
 					? Collections.emptyList()
 					: PackagedProgram.getAllLibraries(jarFileUrl, extractedLibs, isPython);
 
+			final JobGraph jobGraph = getJobGraph(pipeline, executionConfig, classpaths, libraries);
+
 			final ClassLoader userClassLoader = ClientUtils.buildUserCodeClassLoader(libraries, classpaths, getClass().getClassLoader());
 
-			final JobGraph jobGraph = getJobGraph(pipeline, executionConfig, classpaths, libraries);
+			final ClusterSpecification clusterSpecification = clusterClientFactory.getClusterSpecification(executionConfig);
+
+			clusterClient = clusterDescriptor.deploySessionCluster(clusterSpecification);
+			shutdownHook = configAccessor.isShutdownOnAttachedExit()
+					? ShutdownHookUtil.addShutdownHook(clusterClient::shutDownCluster, clusterClient.getClass().getSimpleName(), LOG)
+					: null;
 
 			checkState(!configAccessor.getDetachedMode());
 			return ClientUtils.submitJobAndWaitForResult(clusterClient, jobGraph, userClassLoader).getJobExecutionResult();
@@ -166,10 +165,9 @@ public class PerJobClusterExecutor<ClusterID> implements Executor {
 		checkNotNull(libraries);
 
 		final ExecutionConfigAccessor executionConfigAccessor = ExecutionConfigAccessor.fromConfiguration(configuration);
-		final JobGraph jobGraph = FlinkPipelineTranslationUtil.getJobGraph(
-				pipeline,
-				configuration,
-				executionConfigAccessor.getParallelism());
+		final JobGraph jobGraph = FlinkPipelineTranslationUtil
+				.getJobGraph(pipeline, configuration, executionConfigAccessor.getParallelism());
+
 		jobGraph.addJars(libraries);
 		jobGraph.setClasspaths(classpaths);
 		jobGraph.setSavepointRestoreSettings(executionConfigAccessor.getSavepointRestoreSettings());

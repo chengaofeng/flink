@@ -60,39 +60,52 @@ public class SessionClusterExecutor<ClusterID> implements Executor {
 	@Override
 	public JobExecutionResult execute(final Pipeline pipeline, final Configuration executionConfig) throws Exception {
 		final ExecutionConfigAccessor configAccessor = ExecutionConfigAccessor.fromConfiguration(executionConfig);
+		final List<URL> classpaths = configAccessor.getClasspaths();
+		final URL jarFileUrl = configAccessor.getJarFilePath();
+
+		final List<File> extractedLibs = PackagedProgram.extractContainedLibraries(jarFileUrl);
+		final boolean isPython = executionConfig.getBoolean(PipelineOptions.Internal.IS_PYTHON);
+
+		final List<URL> libraries = jarFileUrl == null
+				? Collections.emptyList()
+				: PackagedProgram.getAllLibraries(jarFileUrl, extractedLibs, isPython);
+
+		final JobGraph jobGraph = getJobGraph(pipeline, executionConfig, classpaths, libraries);
+
+		final ClassLoader userClassLoader = ClientUtils.buildUserCodeClassLoader(libraries, classpaths, getClass().getClassLoader());
 
 		final ClusterClientFactory<ClusterID> clusterClientFactory = clusterClientServiceLoader.getClusterClientFactory(executionConfig);
-
 		try (final ClusterDescriptor<ClusterID> clusterDescriptor = clusterClientFactory.createClusterDescriptor(executionConfig)) {
 			final ClusterID clusterID = clusterClientFactory.getClusterId(executionConfig);
 			checkState(clusterID != null);
 
 			try (final ClusterClient<ClusterID> clusterClient = clusterDescriptor.retrieve(clusterID)) {
-
-				final JobGraph jobGraph = FlinkPipelineTranslationUtil.getJobGraph(
-						pipeline,
-						clusterClient.getFlinkConfiguration(),
-						configAccessor.getParallelism());
-
-				final List<URL> classpaths = configAccessor.getClasspaths();
-				final URL jarFileUrl = configAccessor.getJarFilePath();
-
-				final List<File> extractedLibs = PackagedProgram.extractContainedLibraries(jarFileUrl);
-				final boolean isPython = executionConfig.getBoolean(PipelineOptions.Internal.IS_PYTHON);
-				final List<URL> libraries = jarFileUrl == null
-						? Collections.emptyList()
-						: PackagedProgram.getAllLibraries(jarFileUrl, extractedLibs, isPython);
-
-				final ClassLoader userClassLoader = ClientUtils.buildUserCodeClassLoader(libraries, classpaths, getClass().getClassLoader());
-
-				jobGraph.addJars(libraries);
-				jobGraph.setClasspaths(classpaths);
-				jobGraph.setSavepointRestoreSettings(configAccessor.getSavepointRestoreSettings());
-
 				return configAccessor.getDetachedMode()
 						? ClientUtils.submitJob(clusterClient, jobGraph)
 						: ClientUtils.submitJobAndWaitForResult(clusterClient, jobGraph, userClassLoader).getJobExecutionResult();
 			}
 		}
+	}
+
+	private JobGraph getJobGraph(
+			final Pipeline pipeline,
+			final Configuration configuration,
+			final List<URL> classpaths,
+			final List<URL> libraries) {
+
+		checkNotNull(pipeline);
+		checkNotNull(configuration);
+		checkNotNull(classpaths);
+		checkNotNull(libraries);
+
+		final ExecutionConfigAccessor executionConfigAccessor = ExecutionConfigAccessor.fromConfiguration(configuration);
+		final JobGraph jobGraph = FlinkPipelineTranslationUtil
+				.getJobGraph(pipeline, configuration, executionConfigAccessor.getParallelism());
+
+		jobGraph.addJars(libraries);
+		jobGraph.setClasspaths(classpaths);
+		jobGraph.setSavepointRestoreSettings(executionConfigAccessor.getSavepointRestoreSettings());
+
+		return jobGraph;
 	}
 }
