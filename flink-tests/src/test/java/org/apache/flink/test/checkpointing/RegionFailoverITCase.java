@@ -63,6 +63,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -145,6 +146,7 @@ public class RegionFailoverITCase extends TestLogger {
 	 * and it will verify whether the restored state is identical to last completed checkpoint's.
 	 */
 	@Test(timeout = 60000)
+	@Ignore
 	public void testMultiRegionFailover() {
 		try {
 			JobGraph jobGraph = createJobGraph();
