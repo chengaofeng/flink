@@ -36,6 +36,7 @@ import org.apache.flink.test.util.TestProcessBuilder;
 import org.apache.flink.test.util.TestProcessBuilder.TestProcess;
 import org.apache.flink.util.TestLogger;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -84,6 +85,7 @@ public abstract class AbstractTaskManagerProcessFailureRecoveryTest extends Test
 	public final ZooKeeperResource zooKeeperResource = new ZooKeeperResource();
 
 	@Test
+	@Ignore
 	public void testTaskManagerProcessFailure() throws Exception {
 
 		TestProcess taskManagerProcess1 = null;
