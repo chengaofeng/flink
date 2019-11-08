@@ -186,7 +186,7 @@ public class CliFrontend {
 
 		if (!programOptions.isPython()) {
 			// Java program should be specified a JAR file
-			if (executionParameters.getJarFilePath() == null) {
+			if (executionParameters.getJarFilePaths().isEmpty()) {
 				throw new CliArgsException("Java program should be specified a JAR file.");
 			}
 		}
@@ -667,7 +667,7 @@ public class CliFrontend {
 			final ProgramOptions runOptions,
 			final ExecutionConfigAccessor executionParameters) throws FileNotFoundException, ProgramInvocationException {
 		String[] programArgs = runOptions.getProgramArgs();
-		URL jarFilePath = executionParameters.getJarFilePath();
+		URL jarFilePath = executionParameters.getJarFilePaths().get(0);
 		List<URL> classpaths = executionParameters.getClasspaths();
 
 		// Get assembler class

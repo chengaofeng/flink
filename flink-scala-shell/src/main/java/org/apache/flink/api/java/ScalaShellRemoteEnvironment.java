@@ -20,10 +20,10 @@ package org.apache.flink.api.java;
  */
 
 import org.apache.flink.api.common.JobExecutionResult;
-import org.apache.flink.api.common.Plan;
-import org.apache.flink.api.common.PlanExecutor;
 import org.apache.flink.api.scala.FlinkILoop;
+import org.apache.flink.configuration.ConfigUtils;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.PipelineOptions;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -41,6 +41,8 @@ public class ScalaShellRemoteEnvironment extends RemoteEnvironment {
 	// reference to Scala Shell, for access to virtual directory
 	private FlinkILoop flinkILoop;
 
+	private final List<URL> jarFileUrls;
+
 	/**
 	 * Creates new ScalaShellRemoteEnvironment that has a reference to the FlinkILoop.
 	 *
@@ -55,22 +57,22 @@ public class ScalaShellRemoteEnvironment extends RemoteEnvironment {
 	public ScalaShellRemoteEnvironment(String host, int port, FlinkILoop flinkILoop, Configuration clientConfig, String... jarFiles) throws Exception {
 		super(host, port, clientConfig, jarFiles, null);
 		this.flinkILoop = flinkILoop;
+		this.jarFileUrls = parseJarFileUrls(jarFiles);
 	}
 
 	@Override
 	public JobExecutionResult execute(String jobName) throws Exception {
-		final Plan p = createProgramPlan(jobName);
 		final List<URL> allJarFiles = getUpdatedJarFiles();
 
-		final PlanExecutor executor = PlanExecutor.createRemoteExecutor(host, port, clientConfiguration);
-		lastJobExecutionResult = executor.executePlan(p, allJarFiles, globalClasspaths);
-		return lastJobExecutionResult;
+		final Configuration executionConfiguration = getExecutorConfiguration();
+		ConfigUtils.encodeStreamToConfig(executionConfiguration, PipelineOptions.JARS, allJarFiles.stream(), URL::toString);
+		return super.execute(jobName);
 	}
 
 	private List<URL> getUpdatedJarFiles() throws MalformedURLException {
 		// write generated classes to disk so that they can be shipped to the cluster
 		URL jarUrl = flinkILoop.writeFilesToDisk().getAbsoluteFile().toURI().toURL();
-		List<URL> allJarFiles = new ArrayList<>(jarFiles);
+		List<URL> allJarFiles = new ArrayList<>(jarFileUrls);
 		allJarFiles.add(jarUrl);
 		return allJarFiles;
 	}

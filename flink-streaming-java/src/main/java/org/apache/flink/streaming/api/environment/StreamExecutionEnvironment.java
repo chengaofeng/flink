@@ -1541,6 +1541,10 @@ public abstract class StreamExecutionEnvironment {
 			throw new RuntimeException("No execution.target specified in your configuration file.");
 		}
 
+		if (executorConfiguration.get(ExecutionOptions.CLUSTER_MODE) == null) {
+			throw new RuntimeException("No execution.target.cluster-mode specified in your configuration file.");
+		}
+
 		final ExecutorFactory executorFactory =
 				executorServiceLoader.getExecutorFactory(executorConfiguration);
 

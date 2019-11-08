@@ -147,6 +147,10 @@ public abstract class ExecutionEnvironment {
 		this.executorConfiguration = checkNotNull(executorConfiguration);
 	}
 
+	protected Configuration getExecutorConfiguration() {
+		return this.executorConfiguration;
+	}
+
 	// --------------------------------------------------------------------------------------------
 	//  Properties
 	// --------------------------------------------------------------------------------------------
@@ -782,6 +786,10 @@ public abstract class ExecutionEnvironment {
 	public JobExecutionResult execute(String jobName) throws Exception {
 		if (executorConfiguration.get(ExecutionOptions.TARGET) == null) {
 			throw new RuntimeException("No execution.target specified in your configuration file.");
+		}
+
+		if (executorConfiguration.get(ExecutionOptions.CLUSTER_MODE) == null) {
+			throw new RuntimeException("No execution.target.cluster-mode specified in your configuration file.");
 		}
 
 		final Plan plan = createProgramPlan(jobName);

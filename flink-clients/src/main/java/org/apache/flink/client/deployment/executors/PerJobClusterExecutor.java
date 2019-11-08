@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -88,14 +89,17 @@ public class PerJobClusterExecutor<ClusterID> implements Executor {
 
 		final ExecutionConfigAccessor configAccessor = ExecutionConfigAccessor.fromConfiguration(executionConfig);
 		final List<URL> classpaths = configAccessor.getClasspaths();
-		final URL jarFileUrl = configAccessor.getJarFilePath();
+		final List<URL> jarFileUrls = configAccessor.getJarFilePaths();
 
-		final List<File> extractedLibs = PackagedProgram.extractContainedLibraries(jarFileUrl);
+		final List<File> extractedLibs = new ArrayList<>();
+		for (URL jarFileUrl : jarFileUrls) {
+			extractedLibs.addAll(PackagedProgram.extractContainedLibraries(jarFileUrl));
+		}
 		final boolean isPython = executionConfig.getBoolean(PipelineOptions.Internal.IS_PYTHON);
 
-		final List<URL> libraries = jarFileUrl == null
+		final List<URL> libraries = jarFileUrls.isEmpty()
 				? Collections.emptyList()
-				: PackagedProgram.getAllLibraries(jarFileUrl, extractedLibs, isPython);
+				: PackagedProgram.getAllLibraries(jarFileUrls.get(0), extractedLibs, isPython);
 
 		final JobGraph jobGraph = getJobGraph(pipeline, executionConfig, classpaths, libraries);
 
@@ -119,14 +123,17 @@ public class PerJobClusterExecutor<ClusterID> implements Executor {
 		try {
 			final ExecutionConfigAccessor configAccessor = ExecutionConfigAccessor.fromConfiguration(executionConfig);
 			final List<URL> classpaths = configAccessor.getClasspaths();
-			final URL jarFileUrl = configAccessor.getJarFilePath();
+			final List<URL> jarFileUrls = configAccessor.getJarFilePaths();
 
-			final List<File> extractedLibs = PackagedProgram.extractContainedLibraries(jarFileUrl);
+			final List<File> extractedLibs = new ArrayList<>();
+			for (URL jarFileUrl : jarFileUrls) {
+				extractedLibs.addAll(PackagedProgram.extractContainedLibraries(jarFileUrl));
+			}
 			final boolean isPython = executionConfig.getBoolean(PipelineOptions.Internal.IS_PYTHON);
 
-			final List<URL> libraries = jarFileUrl == null
+			final List<URL> libraries = jarFileUrls.isEmpty()
 					? Collections.emptyList()
-					: PackagedProgram.getAllLibraries(jarFileUrl, extractedLibs, isPython);
+					: PackagedProgram.getAllLibraries(jarFileUrls.get(0), extractedLibs, isPython);
 
 			final JobGraph jobGraph = getJobGraph(pipeline, executionConfig, classpaths, libraries);
 

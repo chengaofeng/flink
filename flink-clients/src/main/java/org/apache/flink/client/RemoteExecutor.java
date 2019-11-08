@@ -116,17 +116,10 @@ public class RemoteExecutor extends PlanExecutor {
 				globalClasspaths,
 				getClass().getClassLoader());
 
-		return executePlanWithJars(jobGraph, userCodeClassLoader);
-	}
-
-	private JobExecutionResult executePlanWithJars(JobGraph jobGraph, ClassLoader classLoader) throws Exception {
-		checkNotNull(jobGraph);
-		checkNotNull(classLoader);
-
 		try (ClusterClient<?> client = new RestClusterClient<>(
 				clientConfiguration,
 				"RemoteExecutor")) {
-			return ClientUtils.submitJobAndWaitForResult(client, jobGraph, classLoader).getJobExecutionResult();
+			return ClientUtils.submitJobAndWaitForResult(client, jobGraph, userCodeClassLoader).getJobExecutionResult();
 		}
 	}
 }

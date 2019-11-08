@@ -100,12 +100,8 @@ public class ExecutionConfigAccessor {
 		return configuration;
 	}
 
-	public URL getJarFilePath() {
-		final List<URL> jarURL = decodeUrlList(configuration, PipelineOptions.JARS);
-		if (jarURL != null && !jarURL.isEmpty()) {
-			return jarURL.get(0);
-		}
-		return null;
+	public List<URL> getJarFilePaths() {
+		return decodeUrlList(configuration, PipelineOptions.JARS);
 	}
 
 	public List<URL> getClasspaths() {

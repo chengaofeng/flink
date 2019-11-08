@@ -81,7 +81,7 @@ public class CliFrontendPackageProgramTest extends TestLogger {
 	public void testNonExistingJarFile() throws Exception {
 		ProgramOptions programOptions = mock(ProgramOptions.class);
 		ExecutionConfigAccessor executionOptions = mock(ExecutionConfigAccessor.class);
-		when(executionOptions.getJarFilePath()).thenReturn(new URL("file:///some/none/existing/path"));
+		when(executionOptions.getJarFilePaths()).thenReturn(Collections.singletonList(new URL("file:///some/none/existing/path")));
 
 		try {
 			frontend.buildProgram(programOptions, executionOptions);
@@ -96,7 +96,7 @@ public class CliFrontendPackageProgramTest extends TestLogger {
 	public void testFileNotJarFile() throws Exception {
 		ProgramOptions programOptions = mock(ProgramOptions.class);
 		ExecutionConfigAccessor executionOptions = mock(ExecutionConfigAccessor.class);
-		when(executionOptions.getJarFilePath()).thenReturn(getNonJarFilePath());
+		when(executionOptions.getJarFilePaths()).thenReturn(Collections.singletonList(getNonJarFilePath()));
 
 		try {
 			frontend.buildProgram(programOptions, executionOptions);
@@ -121,7 +121,7 @@ public class CliFrontendPackageProgramTest extends TestLogger {
 		ProgramOptions programOptions = new ProgramOptions(commandLine);
 		ExecutionConfigAccessor executionOptions = ExecutionConfigAccessor.fromProgramOptions(programOptions);
 
-		assertEquals(getTestJarPath(), executionOptions.getJarFilePath().getPath());
+		assertEquals(getTestJarPath(), executionOptions.getJarFilePaths().get(0).getPath());
 		assertArrayEquals(classpath, executionOptions.getClasspaths().toArray());
 		assertArrayEquals(reducedArguments, programOptions.getProgramArgs());
 
@@ -145,7 +145,7 @@ public class CliFrontendPackageProgramTest extends TestLogger {
 		ProgramOptions programOptions = new ProgramOptions(commandLine);
 		ExecutionConfigAccessor executionOptions = ExecutionConfigAccessor.fromProgramOptions(programOptions);
 
-		assertEquals(getTestJarPath(), executionOptions.getJarFilePath().getPath());
+		assertEquals(getTestJarPath(), executionOptions.getJarFilePaths().get(0).getPath());
 		assertArrayEquals(classpath, executionOptions.getClasspaths().toArray());
 		assertArrayEquals(reducedArguments, programOptions.getProgramArgs());
 
@@ -169,7 +169,7 @@ public class CliFrontendPackageProgramTest extends TestLogger {
 		ProgramOptions programOptions = new ProgramOptions(commandLine);
 		ExecutionConfigAccessor executionOptions = ExecutionConfigAccessor.fromProgramOptions(programOptions);
 
-		assertEquals(getTestJarPath(), executionOptions.getJarFilePath().getPath());
+		assertEquals(getTestJarPath(), executionOptions.getJarFilePaths().get(0).getPath());
 		assertArrayEquals(classpath, executionOptions.getClasspaths().toArray());
 		assertArrayEquals(reducedArguments, programOptions.getProgramArgs());
 
@@ -198,7 +198,7 @@ public class CliFrontendPackageProgramTest extends TestLogger {
 		ProgramOptions programOptions = new ProgramOptions(commandLine);
 		ExecutionConfigAccessor executionOptions = ExecutionConfigAccessor.fromProgramOptions(programOptions);
 
-		assertEquals(arguments[4], executionOptions.getJarFilePath().getPath());
+		assertEquals(arguments[4], executionOptions.getJarFilePaths().get(0).getPath());
 		assertArrayEquals(classpath, executionOptions.getClasspaths().toArray());
 		assertArrayEquals(reducedArguments, programOptions.getProgramArgs());
 
@@ -219,7 +219,7 @@ public class CliFrontendPackageProgramTest extends TestLogger {
 		ProgramOptions programOptions = new ProgramOptions(commandLine);
 		ExecutionConfigAccessor executionOptions = ExecutionConfigAccessor.fromProgramOptions(programOptions);
 
-		assertEquals(arguments[0], executionOptions.getJarFilePath().getPath());
+		assertEquals(arguments[0], executionOptions.getJarFilePaths().get(0).getPath());
 		assertArrayEquals(new String[0], programOptions.getProgramArgs());
 
 		try {
@@ -280,7 +280,7 @@ public class CliFrontendPackageProgramTest extends TestLogger {
 			ProgramOptions programOptions = new ProgramOptions(commandLine);
 			ExecutionConfigAccessor executionOptions = ExecutionConfigAccessor.fromProgramOptions(programOptions);
 
-			assertEquals(getTestJarPath(), executionOptions.getJarFilePath().getPath());
+			assertEquals(getTestJarPath(), executionOptions.getJarFilePaths().get(0).getPath());
 			assertArrayEquals(classpath, executionOptions.getClasspaths().toArray());
 			assertEquals(TEST_JAR_CLASSLOADERTEST_CLASS, programOptions.getEntryPointClassName());
 			assertArrayEquals(reducedArguments, programOptions.getProgramArgs());
