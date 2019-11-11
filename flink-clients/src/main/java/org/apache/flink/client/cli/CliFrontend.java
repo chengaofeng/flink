@@ -35,10 +35,12 @@ import org.apache.flink.client.program.ProgramInvocationException;
 import org.apache.flink.client.program.ProgramMissingJobException;
 import org.apache.flink.client.program.ProgramParametrizationException;
 import org.apache.flink.configuration.ConfigConstants;
+import org.apache.flink.configuration.ConfigUtils;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.CoreOptions;
 import org.apache.flink.configuration.GlobalConfiguration;
 import org.apache.flink.configuration.JobManagerOptions;
+import org.apache.flink.configuration.PipelineOptions;
 import org.apache.flink.configuration.RestOptions;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.plugin.PluginUtils;
@@ -176,7 +178,6 @@ public class CliFrontend {
 		final CommandLine commandLine = CliFrontendParser.parse(commandLineOptions, args, true);
 
 		final ProgramOptions programOptions = new ProgramOptions(commandLine);
-		final ExecutionConfigAccessor executionParameters = ExecutionConfigAccessor.fromProgramOptions(programOptions);
 
 		// evaluate help flag
 		if (commandLine.hasOption(HELP_OPTION.getOpt())) {
@@ -186,11 +187,12 @@ public class CliFrontend {
 
 		if (!programOptions.isPython()) {
 			// Java program should be specified a JAR file
-			if (executionParameters.getJarFilePaths().isEmpty()) {
+			if (programOptions.getJarFilePath() == null) {
 				throw new CliArgsException("Java program should be specified a JAR file.");
 			}
 		}
 
+		final ExecutionConfigAccessor executionParameters = ExecutionConfigAccessor.fromProgramOptions(programOptions);
 		final PackagedProgram program;
 		try {
 			LOG.info("Building program from JAR file");
@@ -201,8 +203,7 @@ public class CliFrontend {
 		}
 
 		final CustomCommandLine customCommandLine = getActiveCustomCommandLine(commandLine);
-
-		final Configuration effectiveConfig = getEffectiveConfiguration(commandLine, executionParameters, customCommandLine);
+		final Configuration effectiveConfig = getEffectiveConfiguration(program, customCommandLine, commandLine, executionParameters);
 		try {
 			execute(effectiveConfig, program);
 		} finally {
@@ -214,13 +215,14 @@ public class CliFrontend {
 		ClientUtils.runProgram(clusterClientServiceLoader, configuration, program);
 	}
 
-	private Configuration getEffectiveConfiguration(CommandLine commandLine, ExecutionConfigAccessor executionParameters, CustomCommandLine customCommandLine) throws FlinkException {
-		// TODO: 01.11.19 all this should be merged nicely, e.g. executionParameters can
-		// take an already existing configuration as a parameter.
-		final Configuration executorConfig = customCommandLine.applyCommandLineOptionsToConfiguration(commandLine);
-		final Configuration executionConfig = executionParameters.getConfiguration();
-		final Configuration effectiveConfig = new Configuration(executorConfig);
-		effectiveConfig.addAll(executionConfig);
+	private Configuration getEffectiveConfiguration(
+			final PackagedProgram program,
+			final CustomCommandLine customCommandLine,
+			final CommandLine commandLine,
+			final ExecutionConfigAccessor executionParameters) throws FlinkException {
+		final Configuration effectiveConfig = customCommandLine.applyCommandLineOptionsToConfiguration(commandLine);
+		executionParameters.applyToConfiguration(effectiveConfig);
+		ConfigUtils.encodeStreamToConfig(effectiveConfig, PipelineOptions.JARS, program.getAllLibraries().stream(), URL::toString);
 		return effectiveConfig;
 	}
 

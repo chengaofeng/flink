@@ -95,8 +95,8 @@ public class ExecutionConfigAccessor {
 		}
 	}
 
-	public Configuration getConfiguration() {
-		return configuration;
+	void applyToConfiguration(final Configuration effectiveConfig) {
+		effectiveConfig.addAll(configuration);
 	}
 
 	public List<URL> getJarFilePaths() {
