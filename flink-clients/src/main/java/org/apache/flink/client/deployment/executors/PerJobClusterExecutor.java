@@ -30,10 +30,8 @@ import org.apache.flink.client.deployment.ClusterSpecification;
 import org.apache.flink.client.deployment.DefaultClusterClientServiceLoader;
 import org.apache.flink.client.program.ClusterClient;
 import org.apache.flink.client.program.DetachedJobExecutionResult;
-import org.apache.flink.client.program.PackagedProgram;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ExecutionOptions;
-import org.apache.flink.configuration.PipelineOptions;
 import org.apache.flink.core.execution.Executor;
 import org.apache.flink.runtime.jobgraph.JobGraph;
 import org.apache.flink.util.ShutdownHookUtil;
@@ -41,10 +39,7 @@ import org.apache.flink.util.ShutdownHookUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.apache.flink.util.Preconditions.checkNotNull;
@@ -91,17 +86,7 @@ public class PerJobClusterExecutor<ClusterID> implements Executor {
 		final List<URL> classpaths = configAccessor.getClasspaths();
 		final List<URL> jarFileUrls = configAccessor.getJarFilePaths();
 
-		final List<File> extractedLibs = new ArrayList<>();
-		for (URL jarFileUrl : jarFileUrls) {
-			extractedLibs.addAll(PackagedProgram.extractContainedLibraries(jarFileUrl));
-		}
-		final boolean isPython = executionConfig.getBoolean(PipelineOptions.Internal.IS_PYTHON);
-
-		final List<URL> libraries = jarFileUrls.isEmpty()
-				? Collections.emptyList()
-				: PackagedProgram.getAllLibraries(jarFileUrls.get(0), extractedLibs, isPython);
-
-		final JobGraph jobGraph = getJobGraph(pipeline, executionConfig, classpaths, libraries);
+		final JobGraph jobGraph = getJobGraph(pipeline, executionConfig, classpaths, jarFileUrls);
 
 		final ClusterSpecification clusterSpecification = clusterClientFactory.getClusterSpecification(executionConfig);
 
@@ -125,19 +110,9 @@ public class PerJobClusterExecutor<ClusterID> implements Executor {
 			final List<URL> classpaths = configAccessor.getClasspaths();
 			final List<URL> jarFileUrls = configAccessor.getJarFilePaths();
 
-			final List<File> extractedLibs = new ArrayList<>();
-			for (URL jarFileUrl : jarFileUrls) {
-				extractedLibs.addAll(PackagedProgram.extractContainedLibraries(jarFileUrl));
-			}
-			final boolean isPython = executionConfig.getBoolean(PipelineOptions.Internal.IS_PYTHON);
+			final JobGraph jobGraph = getJobGraph(pipeline, executionConfig, classpaths, jarFileUrls);
 
-			final List<URL> libraries = jarFileUrls.isEmpty()
-					? Collections.emptyList()
-					: PackagedProgram.getAllLibraries(jarFileUrls.get(0), extractedLibs, isPython);
-
-			final JobGraph jobGraph = getJobGraph(pipeline, executionConfig, classpaths, libraries);
-
-			final ClassLoader userClassLoader = ClientUtils.buildUserCodeClassLoader(libraries, classpaths, getClass().getClassLoader());
+			final ClassLoader userClassLoader = ClientUtils.buildUserCodeClassLoader(jarFileUrls, classpaths, getClass().getClassLoader());
 
 			final ClusterSpecification clusterSpecification = clusterClientFactory.getClusterSpecification(executionConfig);
 
