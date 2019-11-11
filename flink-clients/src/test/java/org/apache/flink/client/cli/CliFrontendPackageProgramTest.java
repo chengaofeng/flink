@@ -81,7 +81,7 @@ public class CliFrontendPackageProgramTest extends TestLogger {
 	public void testNonExistingJarFile() throws Exception {
 		ProgramOptions programOptions = mock(ProgramOptions.class);
 		ExecutionConfigAccessor executionOptions = mock(ExecutionConfigAccessor.class);
-		when(executionOptions.getJarFilePaths()).thenReturn(Collections.singletonList(new URL("file:///some/none/existing/path")));
+		when(programOptions.getJarFilePath()).thenReturn("file:///some/none/existing/path");
 
 		try {
 			frontend.buildProgram(programOptions, executionOptions);
@@ -96,7 +96,7 @@ public class CliFrontendPackageProgramTest extends TestLogger {
 	public void testFileNotJarFile() throws Exception {
 		ProgramOptions programOptions = mock(ProgramOptions.class);
 		ExecutionConfigAccessor executionOptions = mock(ExecutionConfigAccessor.class);
-		when(executionOptions.getJarFilePaths()).thenReturn(Collections.singletonList(getNonJarFilePath()));
+		when(programOptions.getJarFilePath()).thenReturn(getNonJarFilePath().getPath());
 
 		try {
 			frontend.buildProgram(programOptions, executionOptions);
