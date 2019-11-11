@@ -67,7 +67,6 @@ public class ExecutionConfigAccessor {
 			configuration.setInteger(CoreOptions.DEFAULT_PARALLELISM, options.getParallelism());
 		}
 
-		configuration.setBoolean(PipelineOptions.Internal.IS_PYTHON, options.isPython());
 		configuration.setBoolean(ExecutionOptions.ATTACHED, !options.getDetachedMode());
 		configuration.setBoolean(ExecutionOptions.SHUTDOWN_IF_ATTACHED, options.isShutdownOnAttachedExit());
 
@@ -132,9 +131,5 @@ public class ExecutionConfigAccessor {
 
 	public boolean isShutdownOnAttachedExit() {
 		return configuration.getBoolean(ExecutionOptions.SHUTDOWN_IF_ATTACHED);
-	}
-
-	public boolean isPython() {
-		return configuration.getBoolean(PipelineOptions.Internal.IS_PYTHON);
 	}
 }
