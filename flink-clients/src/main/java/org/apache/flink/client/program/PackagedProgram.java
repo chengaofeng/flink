@@ -306,16 +306,12 @@ public class PackagedProgram {
 	 * Returns all provided libraries needed to run the program.
 	 */
 	public List<URL> getAllLibraries() {
-		return getAllLibraries(this.jarFile, this.extractedTempLibraries, isPython);
-	}
-
-	public static List<URL> getAllLibraries(URL jarFile, List<File> extractedTempLibraries, boolean isPython) {
-		List<URL> libs = new ArrayList<URL>(extractedTempLibraries.size() + 1);
+		List<URL> libs = new ArrayList<URL>(this.extractedTempLibraries.size() + 1);
 
 		if (jarFile != null) {
 			libs.add(jarFile);
 		}
-		for (File tmpLib : extractedTempLibraries) {
+		for (File tmpLib : this.extractedTempLibraries) {
 			try {
 				libs.add(tmpLib.getAbsoluteFile().toURI().toURL());
 			}
