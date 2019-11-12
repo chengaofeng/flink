@@ -35,12 +35,10 @@ import org.apache.flink.client.program.ProgramInvocationException;
 import org.apache.flink.client.program.ProgramMissingJobException;
 import org.apache.flink.client.program.ProgramParametrizationException;
 import org.apache.flink.configuration.ConfigConstants;
-import org.apache.flink.configuration.ConfigUtils;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.CoreOptions;
 import org.apache.flink.configuration.GlobalConfiguration;
 import org.apache.flink.configuration.JobManagerOptions;
-import org.apache.flink.configuration.PipelineOptions;
 import org.apache.flink.configuration.RestOptions;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.core.plugin.PluginUtils;
@@ -222,7 +220,7 @@ public class CliFrontend {
 			final ExecutionConfigAccessor executionParameters) throws FlinkException {
 		final Configuration effectiveConfig = customCommandLine.applyCommandLineOptionsToConfiguration(commandLine);
 		executionParameters.applyToConfiguration(effectiveConfig);
-		ConfigUtils.encodeStreamToConfig(effectiveConfig, PipelineOptions.JARS, program.getAllLibraries().stream(), URL::toString);
+//		ConfigUtils.encodeStreamToConfig(effectiveConfig, PipelineOptions.JARS, program.getAllLibraries().stream(), URL::toString);
 		return effectiveConfig;
 	}
 
