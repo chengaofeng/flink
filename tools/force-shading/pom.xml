@@ -38,9 +38,23 @@ under the License.
 
 	<groupId>org.apache.flink</groupId>
 	<artifactId>force-shading</artifactId>
-	<version>1.9-SNAPSHOT</version>
+	<version>1.9-H3</version>
 
 	<packaging>jar</packaging>
+
+
+	<distributionManagement>
+	        <repository>
+	            <id>falcon-releases</id>
+	            <name>falcon-releases</name>
+	            <url>http://192.168.0.102:8081/repository/falcon-releases/</url>
+	        </repository>
+	        <snapshotRepository>
+	            <id>falcon-snapshots</id>
+	            <name>falcon-snapshots</name>
+	            <url>http://192.168.0.102:8081/repository/falcon-snapshots/</url>
+	        </snapshotRepository>
+	    </distributionManagement>
 
 	<profiles>
 		<profile>
