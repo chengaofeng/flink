@@ -25,7 +25,7 @@ under the License.
 	<parent>
 		<groupId>org.apache.flink</groupId>
 		<artifactId>flink-parent</artifactId>
-		<version>1.9-SNAPSHOT</version>
+		<version>1.9-H3</version>
 		<relativePath>..</relativePath>
 	</parent>
 
@@ -217,46 +217,7 @@ under the License.
 				</executions>
 			</plugin>
 
-			<plugin>
-				<groupId>com.github.eirslett</groupId>
-				<artifactId>frontend-maven-plugin</artifactId>
-				<version>1.6</version>
-				<executions>
-					<execution>
-						<id>install node and npm</id>
-						<goals>
-							<goal>install-node-and-npm</goal>
-						</goals>
-						<configuration>
-							<nodeVersion>v10.9.0</nodeVersion>
-						</configuration>
-					</execution>
-					<execution>
-						<id>npm install</id>
-						<goals>
-							<goal>npm</goal>
-						</goals>
-						<configuration>
-							<arguments>ci --cache-max=0 --no-save</arguments>
-							<environmentVariables>
-								<HUSKY_SKIP_INSTALL>true</HUSKY_SKIP_INSTALL>
-							</environmentVariables>
-						</configuration>
-					</execution>
-					<execution>
-						<id>npm run build</id>
-						<goals>
-							<goal>npm</goal>
-						</goals>
-						<configuration>
-							<arguments>run build</arguments>
-						</configuration>
-					</execution>
-				</executions>
-				<configuration>
-					<workingDirectory>web-dashboard</workingDirectory>
-				</configuration>
-			</plugin>
+			
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
